@@ -26,7 +26,7 @@ module.exports = (io, socket) => {
   // @description : fetch one to one chat ***
   socket.on("getChat", async (chatId) => {
     try {
-      let chat = ChatController.findById(chatId);
+      let chat = await ChatController.findById(chatId);
       chat && socket.emit("chat", chat);
     } catch (e) {
       console.log(e.message);
@@ -152,10 +152,7 @@ module.exports = (io, socket) => {
   //disconnects client **
   socket.on("disconnect", () => {
     try {
-      const User = UserController.findOneById(user.id);
-      if (User) {
-        UserController.update({ _id: user.id }, { status: "Offline" });
-      }
+      UserController.updateOne({ _id: user.id }, { status: "Offline" });
     } catch (e) {
       console.log(e.message);
     }

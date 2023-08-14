@@ -18,5 +18,8 @@ class UserController {
   update(filter, data) {
     return UserModel.update(filter, data);
   }
+  updateOne(filter, data) {
+    return UserModel.updateOne(filter, data);
+  }
 }
 module.exports = UserController;
