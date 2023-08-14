@@ -1,14 +1,17 @@
 const { query } = require("express");
 const ChatModel = require("../models/Chat");
 class ChatController {
-  chatFind(filter) {
-    return ChatModel.find(filter);
-  }
-  createChat(data) {
+  create(data) {
     return ChatModel.create(data);
   }
-  FindAndUpdate(filter, data) {
-    return ChatModel.findByIdAndUpdate(filter, data);
+  find(filter) {
+    return ChatModel.find(filter);
+  }
+  findById(id) {
+    return ChatModel.findById(id);
+  }
+  findAndUpdate(filter, data) {
+    return ChatModel.findAndUpdate(filter, data);
   }
 }
 
