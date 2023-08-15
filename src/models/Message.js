@@ -20,7 +20,7 @@ const MessageSchema = new mongoose.Schema(
     body: String,
     //file: Object,
   },
-  { timestamp: true }
+  { timestamps: true }
 );
 MessageSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("Message", MessageSchema);

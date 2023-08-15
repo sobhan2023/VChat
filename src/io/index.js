@@ -3,13 +3,15 @@ const {
   MessageController,
   UserController,
   ChatController,
+  SessionContoller,
 } = require("../controllers/index.js");
-const { Uploads, Receive, Delete } = require("../AWS/index.js");
+const paginate = require("mongoose-paginate-v2");
+//const { Uploads, Receive, Delete } = require("../AWS/index.js");
 
-module.exports = (io, socket) => {
+module.exports = (socket) => {
   //Chat
   const user = socket.user;
-  // @description : Fetch all chats for user ***
+  // @description : Fetch all chats for user *** => we have bug
   socket.on("fetchChats", async (page = 1, limit = 10) => {
     try {
       const options = {
@@ -17,13 +19,15 @@ module.exports = (io, socket) => {
         limit: limit,
         sort: { updatedAt: -1 },
       };
-      let Chats = await ChatController.paginate({ members: user._id }, options);
+      console.log(user);
+      let Chats = await ChatController.paginate({ members: user }, options);
       socket.emit("updateChats", Chats);
     } catch (e) {
       console.log(e.message);
     }
   });
-  // @description : fetch one to one chat ***
+
+  // @description : fetch one to one chat *** */
   socket.on("getChat", async (chatId) => {
     try {
       let chat = await ChatController.findById(chatId);
@@ -32,8 +36,9 @@ module.exports = (io, socket) => {
       console.log(e.message);
     }
   });
-  // @description : create one to one chat ***
-  socket.on("newChat", async (members, page, limit) => {
+
+  // @description : create one to one chat *** */
+  socket.on("newChat", async (members, page = 1, limit = 10) => {
     try {
       const options = {
         page: page,
@@ -44,14 +49,15 @@ module.exports = (io, socket) => {
         creator: user,
         members: members,
       };
-      const createdChat = await ChatController.createChat(chat);
+      const createdChat = await ChatController.create(chat);
       let Chats = await ChatController.paginate({ members: user._id }, options);
       socket.emit("createChat", createdChat);
     } catch (e) {
       console.log(e.message);
     }
   });
-  //**
+
+  //*** */
   socket.on("findUsers", async function (nameOrEmail) {
     try {
       const user = await UserController.find({
@@ -66,7 +72,8 @@ module.exports = (io, socket) => {
       console.log(error);
     }
   });
-  //**
+
+  //** */
   socket.on("all-message", async (chatId, page = 1, limit = 20) => {
     try {
       const options = {
@@ -84,7 +91,7 @@ module.exports = (io, socket) => {
     }
   });
 
-  //**
+  //** => bug
   socket.on("edit-message", async (message_id, data, page = 1, limit = 20) => {
     try {
       const options = {
@@ -92,7 +99,10 @@ module.exports = (io, socket) => {
         limit: limit,
         sort: { updatedAt: -1 },
       };
-      let message = MessageController.editMessage({ _id: message_id }, data);
+      let message = MessageController.editMessage(
+        { $and: [{ _id: message_id }, { creator: user }] },
+        data
+      );
       let messages = await MessageController.paginate(
         { chat: message.chat },
         options
@@ -103,14 +113,14 @@ module.exports = (io, socket) => {
     }
   });
 
-  //send message **
+  //send message ** */
   socket.on("send-message", async (message, page = 1, limit = 10) => {
     try {
       //await Uploads(FilePath);
       const options = {
         page: page,
         limit: limit,
-        sort: { update_at: -1 },
+        sort: { updatedAt: -1 },
       };
       const Message = await MessageController.sendMessage({
         creator: user,
@@ -129,8 +139,9 @@ module.exports = (io, socket) => {
       console.log(e.message);
     }
   });
-  //**
-  socket.on("delete-message", async (messageId, page = 1, limit = 10) => {
+
+  //** => we have bug
+  socket.on("delete-message", async (message_id, page = 1, limit = 10) => {
     try {
       const options = {
         page: page,
@@ -138,7 +149,9 @@ module.exports = (io, socket) => {
         sort: { updatedAt: -1 },
       };
       //await Delete(id);
-      const message = MessageController.delteMessage({ _id: messageId });
+      const message = MessageController.delteMessage({
+        $and: [{ _id: message_id }, { creator: user }],
+      });
       let messages = await MessageController.paginate(
         { chat: message.chat },
         options
@@ -149,10 +162,13 @@ module.exports = (io, socket) => {
     }
   });
 
-  //disconnects client **
+  //disconnects client ** bugs
   socket.on("disconnect", () => {
     try {
       UserController.updateOne({ _id: user.id }, { status: "Offline" });
+      SessionContoller.delete({
+        accessToken: socket.handshake.query?.accessToken,
+      });
     } catch (e) {
       console.log(e.message);
     }

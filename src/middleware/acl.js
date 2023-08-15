@@ -13,6 +13,7 @@ async function ACLMiddleware(req, res, next) {
     return res.send({ ok: false, errorCode: 401 });
   }
 }
+//bug
 async function ACLSocketMiddleware(socket, next) {
   const accessToken = socket.handshake.query?.accessToken;
   if (!accessToken) {

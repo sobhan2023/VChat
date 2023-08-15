@@ -12,5 +12,8 @@ class MessageController {
   delteMessage(filter) {
     return MessageModel.deleteOne(filter);
   }
+  paginate(filter, layout) {
+    return MessageModel.paginate(filter, layout);
+  }
 }
 module.exports = MessageController;

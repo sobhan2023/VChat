@@ -15,16 +15,16 @@ require("./src/libs/mongo");
 
 app.use("/api/v1", require("./src/routes/api/v1"));
 
-server.listen(process.env.PORT, () =>
-  console.log(`Example app listening on port ${process.env.PORT}!`)
-);
 // --------------------------DEPLOYMENT------------------------------
-const io = socket(server);
 //Socket connection
+const io = socket(server);
 const listenSocket = require("./src/io/index");
 const { ACLSocketMiddleware } = require("./src/middleware/acl");
 io.use(ACLSocketMiddleware);
 io.on("connection", (socket) => {
-  console.log("Client connection");
-  listenSocket(io, socket);
+  listenSocket(socket);
 });
+
+server.listen(process.env.PORT, () =>
+  console.log(`Example app listening on port ${process.env.PORT}!`)
+);

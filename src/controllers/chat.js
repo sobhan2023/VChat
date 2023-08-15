@@ -13,6 +13,9 @@ class ChatController {
   findAndUpdate(filter, data) {
     return ChatModel.findAndUpdate(filter, data);
   }
+  paginate(filter, layout) {
+    return ChatModel.paginate(filter, layout);
+  }
 }
 
 module.exports = ChatController;
